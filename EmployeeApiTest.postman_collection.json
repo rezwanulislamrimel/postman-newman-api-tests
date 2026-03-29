@@ -1,0 +1,370 @@
+{
+  "info": {
+    "_postman_id": "e13b9ab0-f8b0-401b-9508-14ed0a5ea44c",
+    "name": "EmployeeApiTest",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "40945316"
+  },
+  "item": [
+    {
+      "name": "ValidEmployeeLogin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Token ---------------------------------------\r",
+              "let jsonData=pm.response.json();\r",
+              "let EmpToken=jsonData.token;\r",
+              "pm.collectionVariables.set(\"EmpToken\",EmpToken)\r",
+              "\r",
+              "// Test Case -----------------------------------------------------------------------\r",
+              "pm.test(\"Valid Employee Login\", ()=>{\r",
+              "    pm.expect(pm.response.code).to.eql(200)\r",
+              "})\r",
+              "\r",
+              "pm.test(\"Login Succesfuly\", ()=>{\r",
+              "    let JsonData=pm.response.json();\r",
+              "    pm.expect(JsonData.message).include(\"Login successful\")\r",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": " {\r\n     \"username\": \"admin\",\r\n     \"password\": \"admin123\"\r\n   }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BaseUrl}}/api/auth/login",
+          "host": [
+            "{{BaseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "EmployeeList",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "let jsonData = pm.response.json();",
+              "let TotalEmployee = jsonData.pagination.totalEmployees;",
+              "pm.collectionVariables.set(\"TotalEmployee\", TotalEmployee);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{EmpToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BaseUrl}}/api/employees",
+          "host": [
+            "{{BaseUrl}}"
+          ],
+          "path": [
+            "api",
+            "employees"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "CreateEmployee",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Random Mobile Number --------------------------------------------------------------------------------\r",
+              "let RandomNumber=Math.round(Math.random()*9999999);\r",
+              "let prifixNum='0161';\r",
+              "let MobileNumber=prifixNum+RandomNumber;\r",
+              "console.log(MobileNumber)\r",
+              "pm.collectionVariables.set(\"MobileNumber\", MobileNumber);\r",
+              "\r",
+              "\r",
+              "// Radom Depertment -----------------------------------------------------------------------------------\r",
+              "\r",
+              "let DepertmentName=[\"Engineering\", \"Marketing\", \"Finance\", \"HR\", \"IT\"];\r",
+              "let RandomDepertment=Math.floor(Math.random()*DepertmentName.length);\r",
+              " let DepertmentIndex=DepertmentName[RandomDepertment];\r",
+              " console.log(DepertmentIndex)\r",
+              " pm.collectionVariables.set('DepertmentIndex',DepertmentIndex);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Status code is 201",
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "// 2. Response has success: true",
+              "pm.test(\"Response has success: true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.true;",
+              "});",
+              "",
+              "// 3. Response contains a message field equal to \"Employee created successfully\"",
+              "pm.test(\"Response contains correct message\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.message).to.eql(\"Employee created successfully\");",
+              "});",
+              "",
+              "// 4. Response data contains an id (number type)",
+              "pm.test(\"Response data contains an id of type number\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property(\"id\");",
+              "    pm.expect(jsonData.data.id).to.be.a(\"number\");",
+              "});",
+              "",
+              "// 5. Response data contains the correct fields",
+              "pm.test(\"Response data contains the correct fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    var data = jsonData.data;",
+              "    pm.expect(data).to.have.property(\"firstName\");",
+              "    pm.expect(data).to.have.property(\"lastName\");",
+              "    pm.expect(data).to.have.property(\"email\");",
+              "    pm.expect(data).to.have.property(\"phone\");",
+              "    pm.expect(data).to.have.property(\"department\");",
+              "    pm.expect(data).to.have.property(\"position\");",
+              "    pm.expect(data).to.have.property(\"salary\");",
+              "    pm.expect(data).to.have.property(\"hireDate\");",
+              "    pm.expect(data).to.have.property(\"status\");",
+              "});",
+              "",
+              "// 6. Response time is less than 2000ms",
+              "pm.test(\"Response time is less than 2000ms\", function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "});",
+              "",
+              "// 7. Response data salary is a number",
+              "pm.test(\"Response data salary is a number\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.salary).to.be.a(\"number\");",
+              "});",
+              "",
+              "// 8. Response data status equals \"active\"",
+              "pm.test(\"Response data status equals 'active'\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.status).to.eql(\"active\");",
+              "});",
+              "",
+              "// 9. Response contains createdBy field",
+              "pm.test(\"Response contains createdBy field\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property(\"createdBy\");",
+              "});",
+              "",
+              "// 10. Response data createdAt and updatedAt are valid date strings",
+              "pm.test(\"Response data createdAt and updatedAt are valid date strings\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(new Date(jsonData.data.createdAt).toString()).to.not.eql(\"Invalid Date\");",
+              "    pm.expect(new Date(jsonData.data.updatedAt).toString()).to.not.eql(\"Invalid Date\");",
+              "});",
+              "",
+              "// 11. Response Content-Type is application/json",
+              "pm.test(\"Response Content-Type is application/json\", function () {",
+              "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+              "});",
+              "",
+              "// 12. Response data email contains '@'",
+              "pm.test(\"Response data email contains '@'\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.email).to.include(\"@\");",
+              "});",
+              "",
+              "// 13. Response data position is a string and not empty",
+              "pm.test(\"Response data position is a string and not empty\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.position).to.be.a(\"string\").and.to.have.length.above(0);",
+              "});",
+              "",
+              "// 14. Response data hireDate is a valid date format (YYYY-MM-DD)",
+              "pm.test(\"Response data hireDate is a valid date format (YYYY-MM-DD)\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.hireDate).to.match(/^\\d{4}-\\d{2}-\\d{2}$/);",
+              "});",
+              "",
+              "// 15. Response data phone is a string and not empty",
+              "pm.test(\"Response data phone is a string and not empty\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.phone).to.be.a(\"string\").and.to.have.length.above(0);",
+              "});",
+              "",
+              "// INTENTIONAL FAIL - for demonstration purposes",
+              "pm.test(\"Response data salary equals 99999 (intentional fail)\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.salary).to.eql(99999);",
+              "});",
+              "",
+              "// INTENTIONAL FAIL - for demonstration purposes",
+              "pm.test(\"Response data id is greater than 9999 (intentional fail)\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.id).to.be.above(9999);",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{EmpToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"firstName\": \"{{$randomFirstName}}\",\r\n    \"lastName\": \"{{$randomLastName}}\",\r\n    \"email\": \"{{$randomFirstName}}@company.com\",\r\n    \"phone\": \"{{MobileNumber}}\",\r\n    \"department\": \"{{DepertmentIndex}}\",\r\n    \"position\": \"Senior Developer\",\r\n    \"salary\": 85000,\r\n    \"hireDate\": \"2022-01-15\",\r\n    \"status\": \"active\",\r\n    \"createdAt\": \"2022-01-15T09:00:00Z\",\r\n    \"updatedAt\": \"2022-01-15T09:00:00Z\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BaseUrl}}/api/employees",
+          "host": [
+            "{{BaseUrl}}"
+          ],
+          "path": [
+            "api",
+            "employees"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GetallEmployeeData",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{EmpToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BaseUrl}}/api/employees?limit={{TotalEmployee}}",
+          "host": [
+            "{{BaseUrl}}"
+          ],
+          "path": [
+            "api",
+            "employees"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "{{TotalEmployee}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "BaseUrl",
+      "value": ""
+    },
+    {
+      "key": "EmpToken",
+      "value": ""
+    },
+    {
+      "key": "MobileNumber",
+      "value": ""
+    },
+    {
+      "key": "DepertmentIndex",
+      "value": ""
+    },
+    {
+      "key": "TotalEmployee",
+      "value": ""
+    }
+  ]
+}
